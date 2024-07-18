@@ -1,0 +1,107 @@
+﻿USE College;
+
+BEGIN TRANSACTION
+
+BEGIN TRY
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Lecturers' AND type = 'U')
+BEGIN
+	CREATE TABLE Lecturers(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		LecturerName VARCHAR(20) NOT NULL,
+		RateForHour INT NOT NULL
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Courses' AND type = 'U')
+BEGIN
+	CREATE TABLE Courses(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		CourseName VARCHAR(15) UNIQUE NOT NULL
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Cycles' AND type = 'U')
+BEGIN
+	CREATE TABLE Cycles(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		StartDate DATE NOT NULL,
+		CourseID INT FOREIGN KEY REFERENCES Courses(ID) NOT NULL,
+		CONSTRAINT AK_CourseAndDate UNIQUE (StartDate, CourseID)
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Students' AND type = 'U')
+BEGIN
+	create table Students(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		StudentName VARCHAR(20) NOT NULL,
+		CostOfCourse INT NULL,
+		CourseID INT FOREIGN KEY REFERENCES Courses(ID) NOT NULL,
+		CONSTRAINT AK_StudentAndCourse UNIQUE (StudentName, CourseID)
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Days' AND type = 'U')
+BEGIN
+	create table Days(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		NameOfDay VARCHAR(10) NOT NULL,
+		StartTime TIME NOT NULL,
+		EndTime TIME NOT NULL,
+		CycleID INT FOREIGN KEY REFERENCES Cycles(ID) NOT NULL
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Subjects' AND type = 'U')
+BEGIN
+	CREATE TABLE Subjects(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		SubjectName VARCHAR(15) NOT NULL,
+		AmountOfHours INT NOT NULL,
+		Expenses INT NULL,
+		LecturerID INT FOREIGN KEY REFERENCES Lecturers(ID) NOT NULL,
+		CourseID INT FOREIGN KEY REFERENCES Courses(ID) NOT NULL
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Admin' AND type = 'U')
+BEGIN
+	CREATE TABLE Admin(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		AdminName VARCHAR(20) NOT NULL,
+		AdminPassword VARCHAR(10) NOT NULL
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'CallBack' AND type = 'U')
+BEGIN
+	CREATE TABLE CallBack(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		RegisterName VARCHAR(20) NOT NULL,
+		RegisterPhone Varchar(10) NOT NULL
+	);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.tables WHERE name = 'Debts' AND type = 'U')
+BEGIN
+	CREATE TABLE Debts(
+		ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+		StudentID int foreign key references Students(ID) NOT NULL,
+		Payed int NOT NULL
+	);
+END
+
+COMMIT TRANSACTION;
+
+END TRY
+
+BEGIN CATCH
+	ROLLBACK TRANSACTION;
+	PRINT 'Error occurred: ' + ERROR_MESSAGE();
+END CATCH
+
+
+
+
+
